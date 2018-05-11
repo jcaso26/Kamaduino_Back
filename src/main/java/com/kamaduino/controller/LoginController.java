@@ -50,13 +50,13 @@ public class LoginController {
 	@RequestMapping(value = "/api/test", method = RequestMethod.GET)
 	public ResponseEntity<List<HumedadDTO>> test(){
 		List<HumedadDTO> humedadList = humedadService.getAllData();
-		return new ResponseEntity<List<HumedadDTO>>(humedadList, HttpStatus.OK);
+		return new ResponseEntity<>(humedadList, HttpStatus.OK);
 	}
 
 	@RequestMapping(value = "/api/post", method = RequestMethod.GET)
 	public ResponseEntity<List<HumedadDTO>> testPost(){
 		List<HumedadDTO> humedadList = humedadService.getAllData();
-		return new ResponseEntity<List<HumedadDTO>>(humedadList, HttpStatus.OK);
+		return new ResponseEntity<>(humedadList, HttpStatus.OK);
 	}
 
 //	@GetMapping(value = "/offers/{offerId}/{offerCode}")
