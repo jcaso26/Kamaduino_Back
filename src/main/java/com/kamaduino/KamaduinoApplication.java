@@ -1,15 +1,11 @@
 package com.kamaduino;
 
-import com.kamaduino.dto.UserDTO;
-import com.kamaduino.entity.User;
-import com.kamaduino.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-
-import javax.annotation.PostConstruct;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
+@EnableScheduling
 public class KamaduinoApplication {
 //	@Autowired
 //	UserService userService;
