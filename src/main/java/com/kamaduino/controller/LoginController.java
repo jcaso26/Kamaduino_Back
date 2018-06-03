@@ -1,10 +1,8 @@
 package com.kamaduino.controller;
 
-import com.kamaduino.dto.HumedadDTO;
 import com.kamaduino.dto.UserDTO;
-import com.kamaduino.service.HumedadService;
 import com.kamaduino.service.UserService;
-import com.kamaduino.utils.Constantes;
+import com.kamaduino.utils.EndPoints;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,19 +11,17 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-
 @RestController
 public class LoginController {
 
 	@Autowired
 	UserService userService;
 
-	@Autowired
-	HumedadService humedadService;
+//	@Autowired
+//	HumedadService humedadService;
 
-	@RequestMapping(value = Constantes.LOGIN, method = RequestMethod.GET)
-	public ResponseEntity<HttpStatus> login(@RequestParam("user") String user,@RequestParam("pass") String pass){
+	@RequestMapping(value = EndPoints.LOGIN, method = RequestMethod.GET)
+	public ResponseEntity<HttpStatus> login(@RequestParam("user") String user, @RequestParam("pass") String pass){
 		UserDTO userLogin = new UserDTO(user, pass);
 		if(userService.loginUser(userLogin)){
 			return new ResponseEntity<>(HttpStatus.OK);
@@ -47,17 +43,26 @@ public class LoginController {
 //		return "sendmail";
 //	}
 
-	@RequestMapping(value = "/api/test", method = RequestMethod.GET)
-	public ResponseEntity<List<HumedadDTO>> test(){
-		List<HumedadDTO> humedadList = humedadService.getAllData();
-		return new ResponseEntity<>(humedadList, HttpStatus.OK);
-	}
+//	@RequestMapping(value = "/api/test", method = RequestMethod.GET)
+//	public ResponseEntity<List<HumedadDTO>> test(){
+//		List<HumedadDTO> humedadList = humedadService.getAllData();
+//		return new ResponseEntity<>(humedadList, HttpStatus.OK);
+//	}
 
-	@RequestMapping(value = "/api/post", method = RequestMethod.GET)
-	public ResponseEntity<List<HumedadDTO>> testPost(){
-		List<HumedadDTO> humedadList = humedadService.getAllData();
-		return new ResponseEntity<>(humedadList, HttpStatus.OK);
-	}
+//	@RequestMapping(value = "/api/post", method = RequestMethod.GET)
+//	public ResponseEntity<List<HumedadDTO>> testPost(){
+////		List<HumedadDTO> humedadList = humedadService.getAllData();
+////		try {
+////			System.out.print(setDateParsing());
+////		} catch (ParseException e) {
+////			e.printStackTrace();
+////		}
+//		return new ResponseEntity<>(humedadList, HttpStatus.OK);
+//	}
+
+
+
+
 
 //	@GetMapping(value = "/offers/{offerId}/{offerCode}")
 //	@Secured

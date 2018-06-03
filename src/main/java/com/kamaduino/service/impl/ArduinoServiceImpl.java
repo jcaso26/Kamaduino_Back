@@ -1,109 +1,188 @@
 package com.kamaduino.service.impl;
 
+import com.kamaduino.converter.SensorDataConverter;
+import com.kamaduino.dto.SensorDataDTO;
 import com.kamaduino.exceptions.KamaduinoException;
 import com.kamaduino.service.ArduinoService;
-import com.kamaduino.utils.Sensor;
-import com.panamahitek.ArduinoException;
-import com.panamahitek.PanamaHitek_Arduino;
-import com.panamahitek.PanamaHitek_MultiMessage;
-import jssc.SerialPortEvent;
-import jssc.SerialPortEventListener;
-import jssc.SerialPortException;
+import com.kamaduino.service.SensorService;
+import com.kamaduino.utils.SensorEnum;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import java.io.*;
+import java.text.SimpleDateFormat;
+import java.time.LocalTime;
+import java.util.*;
 
 @Service
 public class ArduinoServiceImpl implements ArduinoService {
 
-    /**
-     *  Instancia de la libreria para la conexion del arduino
-     **/
-    private PanamaHitek_Arduino arduino = new PanamaHitek_Arduino();
+    @Autowired
+    SensorService sensorService;
 
-    /**
-     *
-     **/
-    private Map<Sensor,Double> dataMap;
-
-    /**
-     *
-     **/
-    @Value("${arduino.numero.sensores}")
-    private int numSensores;
-
-    @Value("${arduino.port}")
-    private String arduinoPort;
-
-    @Value("${arduino.dataRate}")
-    private int dataRate;
+    @Value("${arduino.data.path}")
+    private String arduinoDataPath;
 
     @Override
-    public Map<Sensor,Double> readData() throws KamaduinoException {
-        dataMap = new HashMap<>();
-        try {
+    public Map<String,Map<LocalTime,List<SensorDataDTO>>> readDataFromFileToBBDD() throws KamaduinoException {
+        /**
+         * Lista Sensores con sus valores
+         */
+        List<SensorDataDTO> sensorList;
 
-        this.arduino.arduinoRXTX(arduinoPort, dataRate, new SerialPortEventListener() {
-            @Override
-            //Si se recibe algun dato en el puerto serie, se ejecuta el siguiente metodo
-            public void serialEvent(SerialPortEvent serialPortEvent) {
+        /**
+         * Mapa Hora - Valores de los Sensores
+         */
+        Map<LocalTime, List<SensorDataDTO>> mapaHorario;
+        Map<LocalTime, List<SensorDataDTO>> mapaHorarioOrdenado;
+
+        /**
+         * Mapa Fecha - Valores por hora
+         */
+        Map<String,Map<LocalTime,List<SensorDataDTO>>> mapaCompleto = new HashMap<>();
+        Map<String,Map<LocalTime,List<SensorDataDTO>>> mapaCompletoOrdenado = null;
+
+        FileReader fr;
+        BufferedReader br;
+        String[] data;
+        String date;
+
+        File dir = new File(this.arduinoDataPath);
+        File[] ficheros = dir.listFiles();
+
+        if(ficheros.length > 0) {
+            for (int i = 0; i < ficheros.length; i++) {
+                System.out.println(ficheros[i].getName());
+                mapaHorario = new HashMap<>();
+
+                //La fecha la cogemos del nombre del fichero quitandole la extension
+                String fecha = String.valueOf(ficheros[i].getName().substring(0, ficheros[i].getName().lastIndexOf(".")));
+
                 try {
-                /*
-                Los datos en el puerto serie se envian caracter por caracter. Si se
-                desea esperar a terminar de recibir el mensaje antes de imprimirlo,
-                el metodo isMessageAvailable() devolvera TRUE cuando se haya terminado
-                de recibir el mensaje, el cual podra ser impreso a traves del metodo
-                printMessage()
-                 */
-                    if (arduino.isMessageAvailable()) {
-                        //Se recibe el dato y se le asigna al jLabelAnswer
-                        System.out.print("MENSAJE ARDUINO: " + arduino.printMessage());
+                    fr = new FileReader(this.arduinoDataPath + ficheros[i].getName());
+                    br = new BufferedReader(fr);
+                    // Lectura del fichero
+                    String linea;
+                    while ((linea = br.readLine()) != null) {
+                        //Comprobamos comentarios
+                        if (!linea.startsWith("--")) {
+                            data = linea.split("#");
+                            //Insertamos los valores de cada sensor
+                            sensorList = new ArrayList<>();
+                            //Fecha y hora de la lectura (Time) //TODO Posible mejora: cambiar String por Time/Date/Similares
+                            date = fecha + " " + data[0];
+                            //Insertamos los valores de cada sensor
+                            sensorList.add(new SensorDataDTO(Double.valueOf(data[1]), date, SensorEnum.SENSOR_HUMEDAD_ARRIBA.getDescripcion()));
+                            sensorList.add(new SensorDataDTO(Double.valueOf(data[2]), date, SensorEnum.SENSOR_TEMPERATURA_ARRIBA.getDescripcion()));
+                            sensorList.add(new SensorDataDTO(Double.valueOf(data[3]), date, SensorEnum.SENSOR_HUMEDAD_ABAJO.getDescripcion()));
+                            sensorList.add(new SensorDataDTO(Double.valueOf(data[4]), date, SensorEnum.SENSOR_TEMPERATURA_ABAJO.getDescripcion()));
+                            sensorList.add(new SensorDataDTO(Double.valueOf(data[5]), date, SensorEnum.SENSOR_NIVEL_AGUA.getDescripcion()));
+
+                            //Insertamos los valores de cada sensor en su horario
+                            mapaHorario.put(LocalTime.parse(data[0]), sensorList);
+                        }
                     }
-                } catch (SerialPortException | ArduinoException ex) {
-//                Logger.getLogger(rxtxExample.class.getName()).log(Level.SEVERE, null, ex);
-                    ex.printStackTrace();
+
+                    fr.close();
+
+                    //Insertamos el mapa completo, con la fecha, hora y valores leidos de cada sensor ordenado por hora
+                    mapaHorarioOrdenado = new TreeMap<>(mapaHorario);
+                    mapaCompleto.put(fecha, mapaHorarioOrdenado);
+
+                } catch (FileNotFoundException e) {
+                    throw new KamaduinoException(e.getMessage());
+                } catch (IOException e1) {
+                    throw new KamaduinoException(e1.getMessage());
                 }
             }
-        });
-//        PanamaHitek_MultiMessage multi = new PanamaHitek_MultiMessage(numSensores, this.arduino);
 
-            this.arduino.isMessageAvailable();
-//            multi.dataReceptionCompleted();
+            //Ordenamos el mapa por fechas
+            mapaCompletoOrdenado = new TreeMap<>(mapaCompleto);
 
-            dataMap.put(Sensor.SENSOR_HUMEDAD_ARRIBA, this.readHumedadSuperior());
-            dataMap.put(Sensor.SENSOR_HUMEDAD_ABAJO, this.readHumedadInferior());
-            dataMap.put(Sensor.SENSOR_TEMPERATURA_ARRIBA, this.readTemperaturaSuperior());
-            dataMap.put(Sensor.SENSOR_TEMPERATURA_ABAJO, this.readTemperaturaInferior());
-            dataMap.put(Sensor.SENSOR_NIVEL_AGUA, this.readNivelAgua());
-            this.arduino.killArduinoConnection();
-        } catch(ArduinoException a){
-            throw new KamaduinoException(a.getMessage());
-        }catch (SerialPortException s){
-            throw new KamaduinoException(s.getMessage());
         }
-        return dataMap;
+
+        return mapaCompletoOrdenado;
     }
 
-    private Double readHumedadSuperior(){
-        return 70.5;
+    @Override
+    public void saveDataInBBDD(Map<String, Map<LocalTime, List<SensorDataDTO>>> dataMapFromFile) {
+        Iterator<Map.Entry<String, Map<LocalTime, List<SensorDataDTO>>>> iterator = dataMapFromFile.entrySet().iterator();
+        Iterator<Map.Entry<LocalTime, List<SensorDataDTO>>> iterator2;
+        while (iterator.hasNext()) {
+            Map.Entry<String, Map<LocalTime, List<SensorDataDTO>>> entry = iterator.next();
+            iterator2 = entry.getValue().entrySet().iterator();
+            while(iterator2.hasNext()){
+                Map.Entry<LocalTime, List<SensorDataDTO>> entry2 = iterator2.next();
+                for(SensorDataDTO sensor: entry2.getValue()){
+                    //TODO LOGGER
+                    sensorService.save(sensor);
+                }
+            }
+        }
     }
 
-    private Double readHumedadInferior(){
-        return 80.5;
+    @Override
+    public void readWriteDataBBDD() throws KamaduinoException {
+        // 1. Leemos los ficheros y los pasamos a DTO
+        Map<String,Map<LocalTime,List<SensorDataDTO>>> dataMap = this.readDataFromFileToBBDD();
+
+        // 2. Si no hay errores, los guardamos en la base de datos y los borramos
+        if(dataMap == null){
+            throw new KamaduinoException("ERROR EN LOS FICHEROS DE DATOS"); //TODO
+        } else if(dataMap.size() == 0 ) {
+            throw new KamaduinoException("NO HAY DATOS PARA ALMACENAR"); //TODO
+        }else{
+            saveDataInBBDD(dataMap);
+            //Eliminamos los ficheros
+            File dir = new File(this.arduinoDataPath);
+            File[] ficheros = dir.listFiles();
+            for (int i = 0; i < ficheros.length; i++) {
+                //TODO LOG FICHERO ELIMINADO
+                ficheros[i].delete();
+            }
+        }
     }
 
-    private Double readTemperaturaSuperior(){
-        return 25.5;
-    }
+    @Override
+    public List<SensorDataDTO> readActualSensorData() throws KamaduinoException {
+        List<SensorDataDTO> datosActuales = new ArrayList<>();
+        String lastLine = null;
+        String last, fileName;
+        File dir = new File(this.arduinoDataPath);
+        File file;
+        BufferedReader br;
+        String[] ficheros = dir.list();
 
-    private Double readTemperaturaInferior(){
-        return 22.5;
-    }
+        try {
+            if(ficheros.length > 0){
+                Date date = new Date();
+                SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
+                for(int i=0; i<ficheros.length; i++){
+                    file = new File(ficheros[i]);
+                    fileName = file.getName().substring(0, file.getName().lastIndexOf("."));
+                    if(fileName.equals(dateFormat.format(date))){
+                        br = new BufferedReader(new FileReader(this.arduinoDataPath + file));
+                        last = br.readLine();
+                        while (last != null) {
+                            lastLine = last;
+                            last = br.readLine();
+                        }
+                        break;
+                    }
+                }
+            }
+            else{
+                //TODO ERRORES LOGGER
+                throw new KamaduinoException("ERROR no ficheros");
+            }
+        } catch (IOException e) {
+            //TODO ERRORES LOGGER
+            e.printStackTrace();
+        }
 
-    private Double readNivelAgua(){
-        return 57.5;
+        datosActuales = SensorDataConverter.textToDTO(lastLine);
+
+        return datosActuales;
     }
 }
