@@ -5,6 +5,8 @@ import com.kamaduino.exceptions.KamaduinoException;
 import com.kamaduino.service.ArduinoService;
 import com.kamaduino.utils.EndPoints;
 import io.swagger.annotations.ApiOperation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +19,8 @@ import java.util.List;
 @RestController
 public class ArduinoController {
 
+    private final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
+
     @Autowired
     ArduinoService arduinoService;
 
@@ -27,10 +31,9 @@ public class ArduinoController {
         List<SensorDataDTO> listaSensorDAta;
         try {
             listaSensorDAta = arduinoService.readActualSensorData();
-        } catch (KamaduinoException e) {
-//            e.printStackTrace();
-//            //TODO LOGGER MENSAJE y NUEVOS MENSAJES
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        } catch (KamaduinoException k) {
+            LOGGER.error(k.getMessage());
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
         return new ResponseEntity<>(listaSensorDAta, HttpStatus.OK);
     }
@@ -52,9 +55,8 @@ public class ArduinoController {
         try {
              arduinoService.readWriteDataBBDD();
         } catch (KamaduinoException k) {
-            k.getMessage();
-            //TODO LOGGER MENSAJE y NUEVOS MENSAJES
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            LOGGER.error(k.getMessage());
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
         return new ResponseEntity<>(HttpStatus.OK);
     }

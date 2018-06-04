@@ -5,7 +5,10 @@ import com.kamaduino.dto.SensorDataDTO;
 import com.kamaduino.exceptions.KamaduinoException;
 import com.kamaduino.service.ArduinoService;
 import com.kamaduino.service.SensorService;
+import com.kamaduino.utils.ErrorEnum;
 import com.kamaduino.utils.SensorEnum;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -17,6 +20,8 @@ import java.util.*;
 
 @Service
 public class ArduinoServiceImpl implements ArduinoService {
+
+    private final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
     SensorService sensorService;
@@ -91,9 +96,9 @@ public class ArduinoServiceImpl implements ArduinoService {
                     mapaCompleto.put(fecha, mapaHorarioOrdenado);
 
                 } catch (FileNotFoundException e) {
-                    throw new KamaduinoException(e.getMessage());
+                    throw new KamaduinoException(ErrorEnum.ERROR_LECTURA_ESCRITURA_FICHEROS, e.getMessage());
                 } catch (IOException e1) {
-                    throw new KamaduinoException(e1.getMessage());
+                    throw new KamaduinoException(ErrorEnum.ERROR_LECTURA_ESCRITURA_FICHEROS, e1.getMessage());
                 }
             }
 
@@ -115,10 +120,10 @@ public class ArduinoServiceImpl implements ArduinoService {
             while(iterator2.hasNext()){
                 Map.Entry<LocalTime, List<SensorDataDTO>> entry2 = iterator2.next();
                 for(SensorDataDTO sensor: entry2.getValue()){
-                    //TODO LOGGER
                     sensorService.save(sensor);
                 }
             }
+            LOGGER.info("Almacenados " + entry.getValue().entrySet().size() + " registros en BBDD");
         }
     }
 
@@ -129,16 +134,16 @@ public class ArduinoServiceImpl implements ArduinoService {
 
         // 2. Si no hay errores, los guardamos en la base de datos y los borramos
         if(dataMap == null){
-            throw new KamaduinoException("ERROR EN LOS FICHEROS DE DATOS"); //TODO
+            throw new KamaduinoException(ErrorEnum.ERROR_LECTURA_FICHEROS_HISTORICO);
         } else if(dataMap.size() == 0 ) {
-            throw new KamaduinoException("NO HAY DATOS PARA ALMACENAR"); //TODO
+            throw new KamaduinoException(ErrorEnum.ERROR_NO_DATA_EN_FICHEROS);
         }else{
             saveDataInBBDD(dataMap);
             //Eliminamos los ficheros
             File dir = new File(this.arduinoDataPath);
             File[] ficheros = dir.listFiles();
             for (int i = 0; i < ficheros.length; i++) {
-                //TODO LOG FICHERO ELIMINADO
+                LOGGER.info("Fichero '" + ficheros[i].getName() + "' eliminado");
                 ficheros[i].delete();
             }
         }
@@ -173,12 +178,10 @@ public class ArduinoServiceImpl implements ArduinoService {
                 }
             }
             else{
-                //TODO ERRORES LOGGER
-                throw new KamaduinoException("ERROR no ficheros");
+                throw new KamaduinoException(ErrorEnum.ERROR_LECTURA_FICHEROS_HISTORICO);
             }
         } catch (IOException e) {
-            //TODO ERRORES LOGGER
-            e.printStackTrace();
+            throw new KamaduinoException(ErrorEnum.ERROR_LECTURA_ESCRITURA_FICHEROS, e.getMessage());
         }
 
         datosActuales = SensorDataConverter.textToDTO(lastLine);

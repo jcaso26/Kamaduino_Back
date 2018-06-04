@@ -43,7 +43,7 @@ public enum SensorEnum {
                 break;
             case 5: descripcion = SENSOR_NIVEL_AGUA.descripcion;
                 break;
-            default: descripcion = "ERROR"; //TODO ERROR NO SENSOR
+            default: descripcion = ErrorEnum.ERROR_ID_SENSOR_NO_VALIDO.getDescripcionError();
                 break;
         }
         return descripcion;

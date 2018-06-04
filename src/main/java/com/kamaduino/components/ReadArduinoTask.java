@@ -1,16 +1,15 @@
 package com.kamaduino.components;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 @Component
 public class ReadArduinoTask {
 
-    private static final SimpleDateFormat dateFormat = new SimpleDateFormat(
-            "MM/dd/yyyy HH:mm:ss");
+    private static final SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
 
     @Scheduled(fixedRate = 10000)
     public void performTask() {

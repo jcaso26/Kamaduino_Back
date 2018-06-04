@@ -3,6 +3,8 @@ package com.kamaduino.listener;
 import com.panamahitek.ArduinoException;
 import com.panamahitek.PanamaHitek_Arduino;
 import jssc.SerialPortException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -13,6 +15,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class ArduinoReadDataListener implements Runnable {
+
+    private final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 
     /**
      *  Instancia de la libreria para la conexion del arduino
@@ -72,20 +76,23 @@ public class ArduinoReadDataListener implements Runnable {
                             this.escribirFichero(arduino.printMessage());
                         }
                     } catch (SerialPortException | ArduinoException ex) {
-                        //Logger.getLogger(rxtxExample.class.getName()).log(Level.SEVERE, null, ex);
-                        ex.printStackTrace();
+                        LOGGER.error(ex.getMessage());
+//                        ex.printStackTrace();
                     }
                 });
             } catch (ArduinoException a) {
-                a.getMessage();
+                LOGGER.error(a.getMessage());
+//                a.getMessage();
             } catch (InterruptedException e) {
-                e.printStackTrace();
+//                e.printStackTrace();
+                LOGGER.error(e.getMessage());
             }
         }
         try {
             this.arduino.killArduinoConnection();
         } catch (ArduinoException e) {
-            e.printStackTrace();
+//            e.printStackTrace();
+            LOGGER.error(e.getMessage());
         }
     }
 
@@ -106,12 +113,14 @@ public class ArduinoReadDataListener implements Runnable {
             if(fileData.exists()){
                 bw = new BufferedWriter(new FileWriter(fileData, true));
             } else {
+                LOGGER.info("Creado nuevo fichero '" + fileData.getName() + "'");
                 bw = new BufferedWriter(new FileWriter(fileData));
             }
             bw.write(cadenaFinal);
             bw.close();
         } catch (IOException e) {
-            e.printStackTrace();
+//            e.printStackTrace();
+            LOGGER.error(e.getMessage());
         }
     }
 }
