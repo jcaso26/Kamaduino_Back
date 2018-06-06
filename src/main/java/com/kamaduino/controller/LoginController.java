@@ -3,6 +3,8 @@ package com.kamaduino.controller;
 import com.kamaduino.dto.UserDTO;
 import com.kamaduino.service.UserService;
 import com.kamaduino.utils.EndPoints;
+import com.kamaduino.utils.StringsUtil;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,10 +19,8 @@ public class LoginController {
 	@Autowired
 	UserService userService;
 
-//	@Autowired
-//	HumedadService humedadService;
-
 	@RequestMapping(value = EndPoints.LOGIN, method = RequestMethod.GET)
+	@ApiOperation(value = StringsUtil.LOGIN_CTRL_VALUE_LOGIN, notes = StringsUtil.LOGIN_CTRL_NOTES_LOGIN)
 	public ResponseEntity<HttpStatus> login(@RequestParam("user") String user, @RequestParam("pass") String pass){
 		UserDTO userLogin = new UserDTO(user, pass);
 		if(userService.loginUser(userLogin)){

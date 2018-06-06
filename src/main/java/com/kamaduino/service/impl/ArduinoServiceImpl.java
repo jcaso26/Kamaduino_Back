@@ -7,6 +7,8 @@ import com.kamaduino.service.ArduinoService;
 import com.kamaduino.service.SensorService;
 import com.kamaduino.utils.ErrorEnum;
 import com.kamaduino.utils.SensorEnum;
+import com.kamaduino.utils.StringsUtil;
+import com.kamaduino.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,7 +64,7 @@ public class ArduinoServiceImpl implements ArduinoService {
                 mapaHorario = new HashMap<>();
 
                 //La fecha la cogemos del nombre del fichero quitandole la extension
-                String fecha = String.valueOf(ficheros[i].getName().substring(0, ficheros[i].getName().lastIndexOf(".")));
+                String fecha = String.valueOf(ficheros[i].getName().substring(0, ficheros[i].getName().lastIndexOf(StringsUtil.PUNTO)));
 
                 try {
                     fr = new FileReader(this.arduinoDataPath + ficheros[i].getName());
@@ -71,13 +73,14 @@ public class ArduinoServiceImpl implements ArduinoService {
                     String linea;
                     while ((linea = br.readLine()) != null) {
                         //Comprobamos comentarios
-                        if (!linea.startsWith("--")) {
-                            data = linea.split("#");
+                        if (!linea.startsWith(StringsUtil.COMMENT_FILE)) {
+                            data = linea.split(StringsUtil.TOKEN);
                             //Insertamos los valores de cada sensor
                             sensorList = new ArrayList<>();
                             //Fecha y hora de la lectura (Time) //TODO Posible mejora: cambiar String por Time/Date/Similares
                             date = fecha + " " + data[0];
                             //Insertamos los valores de cada sensor
+                            //TODO CAMBIAR POR UN FOR
                             sensorList.add(new SensorDataDTO(Double.valueOf(data[1]), date, SensorEnum.SENSOR_HUMEDAD_ARRIBA.getDescripcion()));
                             sensorList.add(new SensorDataDTO(Double.valueOf(data[2]), date, SensorEnum.SENSOR_TEMPERATURA_ARRIBA.getDescripcion()));
                             sensorList.add(new SensorDataDTO(Double.valueOf(data[3]), date, SensorEnum.SENSOR_HUMEDAD_ABAJO.getDescripcion()));
@@ -123,7 +126,9 @@ public class ArduinoServiceImpl implements ArduinoService {
                     sensorService.save(sensor);
                 }
             }
-            LOGGER.info("Almacenados " + entry.getValue().entrySet().size() + " registros en BBDD");
+
+            Object[] array = {entry.getValue().entrySet().size()};
+            LOGGER.info(Utils.getMessage(StringsUtil.FICHEROS_ALMACENADOS, array));
         }
     }
 
@@ -143,7 +148,8 @@ public class ArduinoServiceImpl implements ArduinoService {
             File dir = new File(this.arduinoDataPath);
             File[] ficheros = dir.listFiles();
             for (int i = 0; i < ficheros.length; i++) {
-                LOGGER.info("Fichero '" + ficheros[i].getName() + "' eliminado");
+                Object[] array = {ficheros[i].getName()};
+                LOGGER.info(Utils.getMessage(StringsUtil.FICHERO_ELIMINADO, array));
                 ficheros[i].delete();
             }
         }
@@ -162,10 +168,10 @@ public class ArduinoServiceImpl implements ArduinoService {
         try {
             if(ficheros.length > 0){
                 Date date = new Date();
-                SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
+                SimpleDateFormat dateFormat = new SimpleDateFormat(StringsUtil.DATE_PATTERN);
                 for(int i=0; i<ficheros.length; i++){
                     file = new File(ficheros[i]);
-                    fileName = file.getName().substring(0, file.getName().lastIndexOf("."));
+                    fileName = file.getName().substring(0, file.getName().lastIndexOf(StringsUtil.PUNTO));
                     if(fileName.equals(dateFormat.format(date))){
                         br = new BufferedReader(new FileReader(this.arduinoDataPath + file));
                         last = br.readLine();

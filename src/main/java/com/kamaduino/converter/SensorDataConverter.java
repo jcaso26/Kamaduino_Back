@@ -3,6 +3,7 @@ package com.kamaduino.converter;
 import com.kamaduino.dto.SensorDataDTO;
 import com.kamaduino.entity.SensorData;
 import com.kamaduino.utils.SensorEnum;
+import com.kamaduino.utils.StringsUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,7 +38,7 @@ public class SensorDataConverter {
     public static List<SensorDataDTO> textToDTO(String cadenaDatos){
         List<SensorDataDTO> listaDTO = new ArrayList<>();
         SensorDataDTO sensorDTO;
-        String[] cadenaDatosTokens = cadenaDatos.split("#");
+        String[] cadenaDatosTokens = cadenaDatos.split(StringsUtil.TOKEN);
         String hora = cadenaDatosTokens[0];
         for(int i=1; i<cadenaDatosTokens.length;i++){
             sensorDTO = new SensorDataDTO(Double.parseDouble(cadenaDatosTokens[i]), hora, SensorEnum.getDescripcionFromValue(i));

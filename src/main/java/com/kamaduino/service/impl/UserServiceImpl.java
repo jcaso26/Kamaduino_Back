@@ -18,6 +18,7 @@ public class UserServiceImpl implements UserService {
         User userEntity = userRepository.getUserByUserName(user.getUser());
         //TEST
         user.setPass("$2a$10$PrI5Gk9L.tSZiW9FXhTS8O8Mz9E97k2FZbFvGFFaSsiTUIl.TCrFu");
+        //TODO PONER BIEN LA PASSWORD
         //TEST
         if(userEntity.getUserName().equals(user.getUser()) && userEntity.getPasswordEncrypted().equals(user.getPass())){
             return true;

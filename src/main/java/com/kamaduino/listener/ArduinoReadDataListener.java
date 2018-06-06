@@ -1,5 +1,7 @@
 package com.kamaduino.listener;
 
+import com.kamaduino.utils.StringsUtil;
+import com.kamaduino.utils.Utils;
 import com.panamahitek.ArduinoException;
 import com.panamahitek.PanamaHitek_Arduino;
 import jssc.SerialPortException;
@@ -59,8 +61,8 @@ public class ArduinoReadDataListener implements Runnable {
         this.arduinoPort = arduinoPort;
         this.dataRate = dataRate;
         this.arduinoDataFilePath = filePath;
-        hourFormat = new SimpleDateFormat("HH:mm");
-        dateFormat = new SimpleDateFormat("dd-MM-yyyy");
+        hourFormat = new SimpleDateFormat(StringsUtil.TIME_PATTERN);
+        dateFormat = new SimpleDateFormat(StringsUtil.DATE_PATTERN);
     }
 
     @Override
@@ -104,8 +106,8 @@ public class ArduinoReadDataListener implements Runnable {
         String cadenaFinal;
 
         Date date = new Date();
-        cadenaFinal = hourFormat.format(date) + "#" + mensajeArduino + "\n";
-        File fileData = new File(this.arduinoDataFilePath + dateFormat.format(date) + ".txt");
+        cadenaFinal = hourFormat.format(date) + StringsUtil.TOKEN + mensajeArduino + "\n";
+        File fileData = new File(this.arduinoDataFilePath + dateFormat.format(date) + StringsUtil.TXT_EXTENSION);
         BufferedWriter bw;
 
         try {
@@ -113,7 +115,8 @@ public class ArduinoReadDataListener implements Runnable {
             if(fileData.exists()){
                 bw = new BufferedWriter(new FileWriter(fileData, true));
             } else {
-                LOGGER.info("Creado nuevo fichero '" + fileData.getName() + "'");
+                Object[] array = {fileData.getName()};
+                LOGGER.info(Utils.getMessage(StringsUtil.FICHERO_CREADO, array));
                 bw = new BufferedWriter(new FileWriter(fileData));
             }
             bw.write(cadenaFinal);

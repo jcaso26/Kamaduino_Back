@@ -4,6 +4,7 @@ import com.kamaduino.dto.SensorDataDTO;
 import com.kamaduino.exceptions.KamaduinoException;
 import com.kamaduino.service.ArduinoService;
 import com.kamaduino.utils.EndPoints;
+import com.kamaduino.utils.StringsUtil;
 import io.swagger.annotations.ApiOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,8 +26,7 @@ public class ArduinoController {
     ArduinoService arduinoService;
 
     @RequestMapping(value = EndPoints.READ_ACTUAL_SENSOR_DATA, method = RequestMethod.GET)
-    @ApiOperation(value = "Lee los valores actuales de los sensores", notes = "Lee los valores actuales de los sensores. " +
-            "Para no desincronizar la escritura del fichero, leemos la ultima linea del fichero")
+    @ApiOperation(value = StringsUtil.ARDUINO_CTRL_VALUE_READ_ACTUAL_SENSOR_DATA, notes = StringsUtil.ARDUINO_CTRL_NOTES_READ_ACTUAL_SENSOR_DATA)
     public ResponseEntity<List<SensorDataDTO>> readActualSensorData(){
         List<SensorDataDTO> listaSensorDAta;
         try {
@@ -49,8 +49,7 @@ public class ArduinoController {
     * LOS METODOS DE ABAJO VAN AL DATACONTROLLER
     * */
     @RequestMapping(value = EndPoints.READ_FILE_DATA_WRITE_BBDD, method = RequestMethod.GET)
-    @ApiOperation(value = "Lectura/Escritura del histórico de datos",
-            notes = "Lee los ficheros que contiene los valores de los sensores, generados por el controlador Arduino, los guarda en base de datos y elimina dichos ficheros")
+    @ApiOperation(value = StringsUtil.ARDUINO_CTRL_VALUE_READ_FILE_DATA_WRITE_BBDD, notes = StringsUtil.ARDUINO_CTRL_NOTES_READ_FILE_DATA_WRITE_BBDD)
     public ResponseEntity<HttpStatus>  readDataFromFileToBBDD(){
         try {
              arduinoService.readWriteDataBBDD();
