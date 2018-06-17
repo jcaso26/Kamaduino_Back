@@ -3,7 +3,7 @@ package com.kamaduino.service.impl;
 import com.kamaduino.converter.SensorDataConverter;
 import com.kamaduino.dto.SensorDataDTO;
 import com.kamaduino.exceptions.KamaduinoException;
-import com.kamaduino.service.ArduinoService;
+import com.kamaduino.service.DataService;
 import com.kamaduino.service.SensorService;
 import com.kamaduino.utils.ErrorEnum;
 import com.kamaduino.utils.SensorEnum;
@@ -16,12 +16,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalTime;
 import java.util.*;
 
 @Service
-public class ArduinoServiceImpl implements ArduinoService {
+public class DataServiceImpl implements DataService {
 
     private final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 
@@ -54,6 +55,7 @@ public class ArduinoServiceImpl implements ArduinoService {
         BufferedReader br;
         String[] data;
         String date;
+        Date dateFinish;
 
         File dir = new File(this.arduinoDataPath);
         File[] ficheros = dir.listFiles();
@@ -77,15 +79,18 @@ public class ArduinoServiceImpl implements ArduinoService {
                             data = linea.split(StringsUtil.TOKEN);
                             //Insertamos los valores de cada sensor
                             sensorList = new ArrayList<>();
-                            //Fecha y hora de la lectura (Time) //TODO Posible mejora: cambiar String por Time/Date/Similares
-                            date = fecha + " " + data[0];
+                            date = fecha + StringsUtil.ESPACIO + data[0];
                             //Insertamos los valores de cada sensor
-                            //TODO CAMBIAR POR UN FOR
-                            sensorList.add(new SensorDataDTO(Double.valueOf(data[1]), date, SensorEnum.SENSOR_HUMEDAD_ARRIBA.getDescripcion()));
-                            sensorList.add(new SensorDataDTO(Double.valueOf(data[2]), date, SensorEnum.SENSOR_TEMPERATURA_ARRIBA.getDescripcion()));
-                            sensorList.add(new SensorDataDTO(Double.valueOf(data[3]), date, SensorEnum.SENSOR_HUMEDAD_ABAJO.getDescripcion()));
-                            sensorList.add(new SensorDataDTO(Double.valueOf(data[4]), date, SensorEnum.SENSOR_TEMPERATURA_ABAJO.getDescripcion()));
-                            sensorList.add(new SensorDataDTO(Double.valueOf(data[5]), date, SensorEnum.SENSOR_NIVEL_AGUA.getDescripcion()));
+                            //TODO CAMBIADO A FOR. PROBAR
+                            dateFinish = new SimpleDateFormat(StringsUtil.DATE_TIME_PATTERN).parse(date);
+                            for(int j = 1; j < data.length; j++){
+                                sensorList.add(new SensorDataDTO(Double.valueOf(data[j]), dateFinish, SensorEnum.getDescripcionFromValue(j)));
+                            }
+//                            sensorList.add(new SensorDataDTO(Double.valueOf(data[1]), dateFinish, SensorEnum.SENSOR_HUMEDAD_ARRIBA.getDescripcion()));
+//                            sensorList.add(new SensorDataDTO(Double.valueOf(data[2]), dateFinish, SensorEnum.SENSOR_TEMPERATURA_ARRIBA.getDescripcion()));
+//                            sensorList.add(new SensorDataDTO(Double.valueOf(data[3]), dateFinish, SensorEnum.SENSOR_HUMEDAD_ABAJO.getDescripcion()));
+//                            sensorList.add(new SensorDataDTO(Double.valueOf(data[4]), dateFinish, SensorEnum.SENSOR_TEMPERATURA_ABAJO.getDescripcion()));
+//                            sensorList.add(new SensorDataDTO(Double.valueOf(data[5]), dateFinish, SensorEnum.SENSOR_NIVEL_AGUA.getDescripcion()));
 
                             //Insertamos los valores de cada sensor en su horario
                             mapaHorario.put(LocalTime.parse(data[0]), sensorList);
@@ -102,6 +107,8 @@ public class ArduinoServiceImpl implements ArduinoService {
                     throw new KamaduinoException(ErrorEnum.ERROR_LECTURA_ESCRITURA_FICHEROS, e.getMessage());
                 } catch (IOException e1) {
                     throw new KamaduinoException(ErrorEnum.ERROR_LECTURA_ESCRITURA_FICHEROS, e1.getMessage());
+                } catch (ParseException p){
+                    throw new KamaduinoException(ErrorEnum.ERROR_PARSE_FECHAS, p.getMessage());
                 }
             }
 
@@ -120,14 +127,16 @@ public class ArduinoServiceImpl implements ArduinoService {
         while (iterator.hasNext()) {
             Map.Entry<String, Map<LocalTime, List<SensorDataDTO>>> entry = iterator.next();
             iterator2 = entry.getValue().entrySet().iterator();
+            int contador = 0;
             while(iterator2.hasNext()){
                 Map.Entry<LocalTime, List<SensorDataDTO>> entry2 = iterator2.next();
                 for(SensorDataDTO sensor: entry2.getValue()){
+                    contador++;
                     sensorService.save(sensor);
                 }
             }
 
-            Object[] array = {entry.getValue().entrySet().size()};
+            Object[] array = {contador};
             LOGGER.info(Utils.getMessage(StringsUtil.FICHEROS_ALMACENADOS, array));
         }
     }
@@ -193,5 +202,10 @@ public class ArduinoServiceImpl implements ArduinoService {
         datosActuales = SensorDataConverter.textToDTO(lastLine);
 
         return datosActuales;
+    }
+
+    @Override
+    public List<SensorDataDTO> readSensorData(String sensorId) throws KamaduinoException {
+        return sensorService.getDataBySensorId(sensorId);
     }
 }

@@ -3,6 +3,7 @@ package com.kamaduino.service.impl;
 import com.kamaduino.converter.SensorDataConverter;
 import com.kamaduino.dto.SensorDataDTO;
 import com.kamaduino.entity.SensorData;
+import com.kamaduino.exceptions.KamaduinoException;
 import com.kamaduino.repository.SensorDataRepository;
 import com.kamaduino.service.SensorService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,8 +24,13 @@ public class SensorServiceImpl implements SensorService{
     }
 
     @Override
-    public List<SensorDataDTO> getAllData() {
-        return null;
+    public List<SensorDataDTO> getDataBySensorId(String sensorId) throws KamaduinoException{
+        List<SensorData> listaBBDD = sensorDataRepository.getSensorDataBySensorId(sensorId);
+        return SensorDataConverter.listEntityToDTO(listaBBDD);
     }
 
+//    @Override
+//    public List<SensorDataDTO> getAllData() {
+//        return null;
+//    }
 }

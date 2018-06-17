@@ -10,7 +10,7 @@ import java.util.Date;
 @Component
 public class ReadArduinoTask {
 
-    private static final SimpleDateFormat dateFormat = new SimpleDateFormat(StringsUtil.DATE_PATTERN + StringsUtil.ESPACIO + StringsUtil.TIME_PATTERN);
+    private static final SimpleDateFormat dateFormat = new SimpleDateFormat(StringsUtil.DATE_TIME_PATTERN);
 
     @Scheduled(fixedRate = 10000)
     public void performTask() {

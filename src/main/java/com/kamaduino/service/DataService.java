@@ -7,9 +7,7 @@ import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
 
-public interface ArduinoService {
-
-//    Map<SensorEnum,Double> readData() throws KamaduinoException;
+public interface DataService {
 
     /**
      *
@@ -36,5 +34,13 @@ public interface ArduinoService {
      * @throws KamaduinoException
      */
     List<SensorDataDTO> readActualSensorData() throws KamaduinoException;
+
+    /**
+     *
+     * @param sensorId
+     * @return
+     * @throws KamaduinoException
+     */
+    List<SensorDataDTO> readSensorData(String sensorId) throws KamaduinoException;
 
 }

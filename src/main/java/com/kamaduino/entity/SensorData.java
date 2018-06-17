@@ -2,21 +2,22 @@ package com.kamaduino.entity;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.Date;
 
 @Entity
 @Table(name = "sensordata")
 public class SensorData implements Serializable{
 
     @Id
-    @Column(name = "idlectura", unique = true)
+    @Column(name = "id", unique = true)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(name = "value", nullable = false)
     private Double valor;
 
-    @Column(name="timinsert", nullable = false)
-    private String time;
+    @Column(name="fechahora", nullable =false)
+    private Date date;
 
     @Column(name="idsensor", nullable = false)
     private String idSensor;
@@ -24,17 +25,17 @@ public class SensorData implements Serializable{
     public SensorData(){
     }
 
-    public SensorData(Long id, Double valor, String time, String idSensor) {
+    public SensorData(Long id, Double valor, Date date, String idSensor) {
         this.id = id;
         this.valor = valor;
-        this.time = time;
+        this.date = date;
         this.idSensor = idSensor;
     }
 
-    public SensorData(Double valor, String time, String idSensor) {
+    public SensorData(Double valor, Date date, String idSensor) {
         this.valor = valor;
-        this.time = time;
         this.idSensor = idSensor;
+        this.date = date;
     }
 
     public Long getId() {
@@ -53,14 +54,6 @@ public class SensorData implements Serializable{
         this.valor = valor;
     }
 
-    public String getTime() {
-        return time;
-    }
-
-    public void setTime(String time) {
-        this.time = time;
-    }
-
     public String getIdSensor() {
         return idSensor;
     }
@@ -69,9 +62,17 @@ public class SensorData implements Serializable{
         this.idSensor = idSensor;
     }
 
+    public Date getDate() {
+        return date;
+    }
+
+    public void setDate(Date date) {
+        this.date = date;
+    }
+
     @Override
     public String toString() {
-        return this.id + "\t" + this.valor+ "\t" + this.time + "\t" + this.idSensor;
+        return this.id + "\t" + this.valor+ "\t" + this.date + "\t" + this.idSensor;
     }
 
 }

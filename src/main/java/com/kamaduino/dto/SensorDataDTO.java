@@ -2,13 +2,15 @@ package com.kamaduino.dto;
 
 import io.swagger.annotations.ApiModelProperty;
 
+import java.util.Date;
+
 public class SensorDataDTO {
 
     @ApiModelProperty(notes = "Valor leído")
     private Double valor;
 
     @ApiModelProperty(notes = "Timestamp de la lectura")
-    private String time;
+    private Date date;
 
     @ApiModelProperty(notes = "Identificador de la lectura")
     private Long id;
@@ -16,16 +18,21 @@ public class SensorDataDTO {
     @ApiModelProperty(notes = "Identificador del Sensor")
     private String idSensor;
 
-    public SensorDataDTO(Double valor, String time, String idSensor) {
+    public SensorDataDTO(Double valor, Date date, String idSensor) {
         this.valor = valor;
-        this.time = time;
+        this.date = date;
         this.idSensor = idSensor;
     }
 
-    public SensorDataDTO(Long id, Double valor, String time, String idSensor) {
+    public SensorDataDTO(Double valor, String idSensor) {
+        this.valor = valor;
+        this.idSensor = idSensor;
+    }
+
+    public SensorDataDTO(Long id, Double valor, Date date, String idSensor) {
         this.id = id;
         this.valor = valor;
-        this.time = time;
+        this.date = date;
         this.idSensor = idSensor;
     }
 
@@ -45,12 +52,12 @@ public class SensorDataDTO {
         this.valor = valor;
     }
 
-    public String getTime() {
-        return time;
+    public Date getDate() {
+        return date;
     }
 
-    public void setTime(String time) {
-        this.time = time;
+    public void setDate(Date date) {
+        this.date = date;
     }
 
     public String getIdSensor() {
