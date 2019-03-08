@@ -1,5 +1,7 @@
 package com.kamaduino;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.kamaduino.listener.ArduinoReadDataListener;
 import com.panamahitek.PanamaHitek_Arduino;
 import org.springframework.beans.factory.annotation.Value;
@@ -9,6 +11,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.core.task.TaskExecutor;
+import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
@@ -50,6 +53,14 @@ public class KamaduinoApplication {
 			};
 		}
 		return null;
+	}
+
+	@Bean
+	public ObjectMapper objectMapper(Jackson2ObjectMapperBuilder builder) {
+		System.out.println("Config is starting.");
+		ObjectMapper objectMapper = builder.createXmlMapper(false).build();
+		objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+		return objectMapper;
 	}
 
 //	@PostConstruct

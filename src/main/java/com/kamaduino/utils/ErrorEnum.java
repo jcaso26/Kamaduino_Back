@@ -8,7 +8,8 @@ public enum ErrorEnum {
     ERROR_NO_DATA_EN_FICHEROS(2, "KAMADUINO-ERROR[2] - No hay datos en ficheros para almacenar"),
     ERROR_ID_SENSOR_NO_VALIDO(3, "KAMADUINO-ERROR[3] - El id indicado no coincide con ningún sensor"),
     ERROR_LECTURA_ESCRITURA_FICHEROS(4, "KAMADUINO-ERROR[4] - Error en la lectura/escritura de los ficheros"),
-    ERROR_PARSE_FECHAS(5, "KAMADUINO-ERROR[5] - Error al parsear Fechas");
+    ERROR_PARSE_FECHAS(5, "KAMADUINO-ERROR[5] - Error al parsear Fechas"),
+    ERROR_ID_RELE_NO_VALIDO(6, "KAMADUINO-ERROR[6] - El id indicado no coincide con ningún relé");
 
     private final int value;
 

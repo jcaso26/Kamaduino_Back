@@ -64,12 +64,4 @@ public class DataController {
         }
         return new ResponseEntity<>(listaSensorData, HttpStatus.OK);
     }
-
-//    @RequestMapping(value = EndPoints.READ_DATA_SENSOR_HUMEDAD_CUSTOM, method = RequestMethod.GET)
-//    @ApiOperation(value = StringsUtil.DATA_CTRL_VALUE_READ_DATA_SENSOR_HUMEDAD_CUSTOM, notes = StringsUtil.DATA_CTRL_NOTES_READ_DATA_SENSOR_HUMEDAD_CUSTOM)
-//    public ResponseEntity<HttpStatus> readDataHumedadFromBBDDCustom() {
-//            //TODO IMPLEMENTAR
-//        return new ResponseEntity<>(HttpStatus.OK);
-//    }
-
 }
